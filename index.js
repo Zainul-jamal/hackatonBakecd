@@ -3,13 +3,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const cors = require('cors');
+const app = express();
+app.use(express.json()); // Use express's built-in JSON parser
 app.use(cors());
 
 require("dotenv").config();
 
 // App setup
-const app = express();
-app.use(express.json()); // Use express's built-in JSON parser
 
 // MongoDB connection
 mongoose
@@ -17,7 +17,8 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch((err) => {
     console.error("MongoDB connection error:", err.message);
-    process.exit(1); // Exit the application if the connection fails
+    process.exit(1); // Exit the application if the connection 
+    // fails
   });
 
 // User Schema
@@ -30,23 +31,45 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model("User", userSchema);
 
 // Signup route
-app.post("/signu-p", async (req, res) => {
+app.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: "All fields are required" });
-
+    
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: "User already exists" });
-
+    
     const hashedPassword = await bcrypt.hash(password, 10); // Hash password
     const newUser = new User({ name, email, password: hashedPassword });
     await newUser.save();
-
+    
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     res.status(500).json({ message: "Error registering user", error: err.message });
   }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+app.post("/user",async(req, res)=>{
+  const UserModel = new UserModel(req.body);
+  try {
+    const newUser = await UserModel.save();
+    res.status(201).json(newUser);
+  } catch (err) {
+    res.status(400).json({ message: "Invalid user data", error: err.message });
+  }
+})
 
 // Login route
 app.post("/login", async (req, res) => {
